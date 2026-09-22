@@ -1,0 +1,8 @@
+feature,dummies_after_group,dummies_drop_first
+workclass,8,7
+marital-status,7,6
+occupation,14,13
+relationship,6,5
+race,5,4
+sex,2,1
+native-country,5,4
