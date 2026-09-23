@@ -1,0 +1,14 @@
+feature,importance
+marital-status,0.2069
+fnlwgt,0.1993
+education-num,0.1203
+age,0.1149
+capital-gain,0.1047
+hours-per-week,0.0653
+occupation,0.0638
+capital-loss,0.0399
+workclass,0.0357
+native-country,0.0142
+relationship,0.0137
+race,0.0136
+sex,0.0077
