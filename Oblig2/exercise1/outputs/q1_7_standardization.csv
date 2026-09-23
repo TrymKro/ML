@@ -1,0 +1,7 @@
+feature,raw_mean,raw_std,std_mean,std_std
+age,38.61,13.66,-0.0,1.0
+fnlwgt,189683.73,105429.05,0.0,1.0
+education-num,10.05,2.57,-0.0,1.0
+capital-gain,1083.63,7479.36,0.0,1.0
+capital-loss,85.12,397.76,0.0,1.0
+hours-per-week,40.53,12.45,-0.0,1.0

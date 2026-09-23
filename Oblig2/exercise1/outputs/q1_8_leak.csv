@@ -1,0 +1,3 @@
+fit_on,min_count,workclass,education,marital-status,occupation,relationship,race,sex,native-country
+train only,146,7,15,6,14,6,5,2,4
+full data,244,7,15,6,13,6,5,2,4
