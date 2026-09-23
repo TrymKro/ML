@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import numpy as np
+from pandas import DataFrame
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,
@@ -18,6 +19,30 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
+
+
+def cross_validate(X, y, folds, make_model, want_train=False):
+    """Fit a fresh model per fold and collect the per-fold metrics.
+
+    make_model() must return an unfitted, sklearn-compatible pipeline.
+    Returns a DataFrame with one row per fold.
+    """
+    recs = []
+    for i, (tr, va) in enumerate(folds):
+        m = make_model()
+        m.fit(X.iloc[tr], y.iloc[tr])
+        pv = m.predict(X.iloc[va])
+        yv = y.iloc[va]
+        if hasattr(m, "predict_proba"):
+            s = m.predict_proba(X.iloc[va])[:, 1]
+        else:
+            s = m.decision_function(X.iloc[va])
+        row = {"fold": i + 1, **evaluate(yv, pv, s)}
+        if want_train:
+            pt = m.predict(X.iloc[tr])
+            row["train_acc"] = accuracy_score(y.iloc[tr], pt)
+        recs.append(row)
+    return DataFrame(recs)
 
 
 def evaluate(y_true, y_pred, y_score):

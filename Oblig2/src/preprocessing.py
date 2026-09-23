@@ -96,6 +96,7 @@ def categorical_step():
 
 def tree_pipeline(**tree_kwargs):
     """Pipeline for tree models: numerics pass through untouched."""
+    tree_kwargs.setdefault("random_state", 42)
     pre = ColumnTransformer(
         [
             ("num", "passthrough", NUMERIC_COLUMNS),
