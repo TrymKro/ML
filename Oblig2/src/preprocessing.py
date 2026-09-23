@@ -24,6 +24,11 @@ from sklearn.tree import DecisionTreeClassifier
 
 from src.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS
 
+# education is a pure copy of education-num (1:1 mapping, association 1.00 in
+# Q1.5), so it is left out of the encoder and the numerics already include
+# education-num.
+CAT_ENCODE = [c for c in CATEGORICAL_COLUMNS if c != "education"]
+
 # From Q1.3: keep categories seen in at least 162 training rows (0.5% of
 # the original 32,561-row training file), everything rarer becomes 'other'.
 MIN_COUNT = 162
@@ -44,7 +49,7 @@ class RareGroup(BaseEstimator, TransformerMixin):
         # columns arrive in the order defined above
         if isinstance(X, pd.DataFrame):
             return X
-        return pd.DataFrame(X, columns=CATEGORICAL_COLUMNS)
+        return pd.DataFrame(X, columns=CAT_ENCODE)
 
     def fit(self, X, y=None):
         X = self._as_df(X)
@@ -94,7 +99,7 @@ def tree_pipeline(**tree_kwargs):
     pre = ColumnTransformer(
         [
             ("num", "passthrough", NUMERIC_COLUMNS),
-            ("cat", categorical_step(), CATEGORICAL_COLUMNS),
+            ("cat", categorical_step(), CAT_ENCODE),
         ]
     )
     return Pipeline(
@@ -110,7 +115,7 @@ def svm_pipeline(svm_kwargs):
     pre = ColumnTransformer(
         [
             ("num", Pipeline([("winsorize", Winsorizer()), ("scale", StandardScaler())]), NUMERIC_COLUMNS),
-            ("cat", categorical_step(), CATEGORICAL_COLUMNS),
+            ("cat", categorical_step(), CAT_ENCODE),
         ]
     )
     return Pipeline(
