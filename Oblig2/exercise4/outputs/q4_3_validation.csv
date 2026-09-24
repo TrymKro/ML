@@ -1,0 +1,4 @@
+config,accuracy,balanced_acc,precision,recall,f1,roc_auc
+grid tree,0.8532,0.7646,0.7405,0.5948,0.6597,0.9019
+q2.4 tree (msl=50),0.8543,0.7717,0.7341,0.6132,0.6682,0.9018
+grid svm,0.8536,0.7495,0.7727,0.5499,0.6425,0.8959
