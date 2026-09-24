@@ -1,0 +1,3 @@
+model,accuracy,balanced_acc,precision,recall,f1,roc_auc,f2
+tree,0.8543,0.7717,0.7341,0.6132,0.6682,0.9018,0.6341
+svm,0.8495,0.7493,0.7496,0.5571,0.6392,0.9024,0.5873
