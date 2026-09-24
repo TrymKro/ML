@@ -18,7 +18,7 @@ import matplotlib
 matplotlib.use("Agg")  # works without a display
 import numpy as np
 from matplotlib import pyplot as plt
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score, roc_curve
 import pandas as pd
 
 from src.metrics import cross_validate, evaluate
@@ -43,11 +43,14 @@ print(f"  balanced acc:   {cv.balanced_acc.mean():.4f} +- {cv.balanced_acc.std()
 # Per-split ROC curves, as required (the original 5 fold splits, restricted
 # to the sub-sample).
 fold_rocs = []
+fold_aucs = []
 for tr, va in svm_folds:
     m = svm_pipeline(svm_kwargs)
     m.fit(X_svm.iloc[tr], y_svm.iloc[tr])
     fpr, tpr, _ = roc_curve(y_svm.iloc[va], m.decision_function(X_svm.iloc[va]))
     fold_rocs.append((fpr, tpr))
+    fold_aucs.append(roc_auc_score(y_svm.iloc[va], m.decision_function(X_svm.iloc[va])))
+mean_fold_auc = float(np.mean(fold_aucs))
 
 model = svm_pipeline(svm_kwargs)
 model.fit(X_svm, y_svm)
@@ -66,7 +69,9 @@ mean_fpr = np.linspace(0, 1, 200)
 mean_tpr = np.mean(
     [np.interp(mean_fpr, f, t) for f, t in fold_rocs], axis=0
 )
-ax.plot(mean_fpr, mean_tpr, "--", color="#4c72b0", label=f"mean fold ROC (AUC={val.roc_auc[0]:.3f})")
+ax.plot(mean_fpr, mean_tpr, "--", color="#4c72b0",
+        label=f"mean of {len(fold_rocs)} folds (AUC={mean_fold_auc:.3f})")
+ax.plot(fpr, tpr, "-", color="#dd8452", label=f"validation set (AUC={val.roc_auc[0]:.3f})")
 ax.plot([0, 1], [0, 1], "k--", lw=1)
 ax.set_xlabel("false positive rate")
 ax.set_ylabel("true positive rate")
