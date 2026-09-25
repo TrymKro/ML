@@ -1,0 +1,16 @@
+Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow 1(1).pdf
+
+__pycache__/
+*.pyc
+
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.nav
+*.snm
+
+Oblig2/code/requirements.md
+latex/main.pdf
