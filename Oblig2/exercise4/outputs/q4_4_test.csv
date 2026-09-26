@@ -1,3 +1,4 @@
-model,accuracy,balanced_acc,precision,recall,f1,roc_auc
-tree,0.8592,0.7709,0.7604,0.6014,0.6716,0.9001
-svm,0.859,0.7517,0.802,0.5458,0.6495,0.8941
+model,accuracy,balanced_acc,precision,recall,f1,roc_auc,train_acc
+tree,0.8607,0.7758,0.7586,0.6129,0.678,0.9068,0.8647
+tree (Q4.3 grid pick),0.8592,0.7709,0.7604,0.6014,0.6716,0.9001,0.8642
+svm,0.859,0.7517,0.802,0.5458,0.6495,0.8941,0.8728

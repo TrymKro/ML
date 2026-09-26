@@ -1,8 +1,9 @@
 """Ex4 Q4.4 - final held-out test set evaluation.
 
-Fits the grid-searched best decision tree (full training set) and the
-grid-searched best SVM (training sub-sample), then scores both on the test
-set that has been unused for model selection.
+Fits the two models we deploy (the hand-tuned tree from Q2.4 and the
+grid-searched RBF SVM from Q4.3) and scores them on the test set, which has
+been unused for model selection. The grid's own tree pick is scored as well,
+purely as a check on the Q4.3 decision, and is not used to choose anything.
 """
 
 import sys
@@ -20,8 +21,10 @@ from src.split import make_split
 OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 
-# Best settings from Q4.3.
-TREE_PARAMS = {"max_depth": 12, "min_samples_leaf": 25}
+# Deployed settings: the tree is the Q2.4 winner (the Q4.3 grid found nothing
+# better, see the report), the SVM is the Q4.3 grid winner.
+TREE_PARAMS = {"min_samples_leaf": 50}
+TREE_PARAMS_GRID = {"max_depth": 12, "min_samples_leaf": 25}
 SVM_PARAMS = {"kernel": "rbf", "C": 1.0, "gamma": 0.1}
 
 X_train, _, X_test, y_train, _, y_test, _, X_svm, y_svm, _ = make_split()
@@ -29,6 +32,7 @@ X_train, _, X_test, y_train, _, y_test, _, X_svm, y_svm, _ = make_split()
 rows = []
 for name, model, fit_from, y_fit in [
     ("tree", tree_pipeline(**TREE_PARAMS), X_train, y_train),
+    ("tree (Q4.3 grid pick)", tree_pipeline(**TREE_PARAMS_GRID), X_train, y_train),
     ("svm", svm_pipeline(SVM_PARAMS), X_svm, y_svm),
 ]:
     model.fit(fit_from, y_fit)
@@ -36,6 +40,7 @@ for name, model, fit_from, y_fit in [
              if hasattr(model.named_steps["model"], "decision_function")
              else model.predict_proba(X_test)[:, 1])
     s = evaluate(y_test, model.predict(X_test), score)
+    s["train_acc"] = model.score(fit_from, y_fit)
     rows.append({"model": name, **s})
 
 res = pd.DataFrame(rows)
