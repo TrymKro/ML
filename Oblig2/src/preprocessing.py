@@ -2,9 +2,9 @@
 
 Implements the decisions from Exercise 1 as sklearn steps so they fit only on
 the training folds: '?' -> 'Unknown' (Q1.1), rare categories -> 'other'
-(Q1.3), one-hot encoding with the dummy variable dropped (Q1.4), and,
-for the SVM branch only, winsorizing the tails and standardizing the numeric
-features (Q1.2/Q1.7). The tree branch leaves the numerics untouched.
+(Q1.3), one-hot encoding with the dummy variable dropped (Q1.4), and
+standardizing the numeric features for the SVM branch only (Q1.7). Both
+branches keep the raw numeric values (Q1.2).
 """
 
 import sys
@@ -69,23 +69,6 @@ class RareGroup(BaseEstimator, TransformerMixin):
         return out
 
 
-class Capper(BaseEstimator, TransformerMixin):
-    """Clip numeric values to the 1st/99th percentiles learned in fit."""
-
-    def fit(self, X, y=None):
-        if isinstance(X, pd.DataFrame):
-            self.lo_ = X.quantile(0.01).values
-            self.hi_ = X.quantile(0.99).values
-        else:
-            X = np.asarray(X)
-            self.lo_ = np.quantile(X, 0.01, axis=0)
-            self.hi_ = np.quantile(X, 0.99, axis=0)
-        return self
-
-    def transform(self, X):
-        return np.clip(X, self.lo_, self.hi_)
-
-
 def categorical_step():
     return Pipeline(
         [
@@ -114,10 +97,10 @@ def tree_pipeline(**tree_kwargs):
 
 
 def svm_pipeline(svm_kwargs):
-    """Pipeline for SVMs: cap + standardize the numerics."""
+    """Pipeline for SVMs: the numerics are only standardised (Q1.2 keeps them)."""
     pre = ColumnTransformer(
         [
-            ("num", Pipeline([("cap", Capper()), ("scale", StandardScaler())]), NUMERIC_COLUMNS),
+            ("num", StandardScaler(), NUMERIC_COLUMNS),
             ("cat", categorical_step(), CAT_ENCODE),
         ]
     )
