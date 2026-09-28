@@ -1,9 +1,11 @@
 """Ex1 Q1.5 - Association between the features.
 
-Builds a single 14x14 association matrix for the mixed-type data: Pearson |r|
-for numeric-numeric pairs, Cramer's V for categorical-categorical pairs, and
-the correlation ratio (eta) for numeric-categorical pairs. All values lie in
-[0, 1] so one heatmap works for every combination.
+Builds a single 14x14 association matrix for the mixed-type data. Pearson |r|
+for numeric-numeric pairs and Cramer's V (the measure the brief suggests) for
+categorical-categorical pairs. A numeric-categorical pair is scored as the
+largest Pearson |r| between the numeric and any one-hot level of the
+categorical, so no statistic beyond Pearson is needed for the mixed cells.
+All values lie in [0, 1] so one heatmap works for every combination.
 """
 
 import sys
@@ -40,6 +42,17 @@ for col in CATEGORICAL_COLUMNS:
 FEATURES = NUMERIC_COLUMNS + CATEGORICAL_COLUMNS
 
 
+# The one categorical with a natural order (Q1.4). Scored as an ordered
+# variable as well as level-by-level, so the 1:1 with education-num shows up.
+ORDINAL_ORDER = {
+    "education": [
+        "Preschool", "1st-4th", "5th-6th", "7th-8th", "9th", "10th", "11th",
+        "12th", "HS-grad", "Some-college", "Assoc-voc", "Assoc-acdm",
+        "Bachelors", "Masters", "Prof-school", "Doctorate",
+    ],
+}
+
+
 def cramers_v(a, b):
     """Cramer's V between two categorical series."""
     tab = pd.crosstab(a, b)
@@ -49,13 +62,19 @@ def cramers_v(a, b):
     return float(np.sqrt(chi2 / n / min(r - 1, k - 1)))
 
 
-def correlation_ratio(cat, num):
-    """Correlation ratio (eta) of the numeric series grouped by cat."""
-    groups = num.groupby(cat)
-    grand = num.mean()
-    ss_between = ((groups.mean() - grand) ** 2 * groups.size()).sum()
-    ss_total = ((num - grand) ** 2).sum()
-    return float(np.sqrt(ss_between / ss_total))
+def max_level_r(num, cat):
+    """Largest Pearson |r| between a numeric series and any encoding of a categorical.
+
+    Scored against the one-hot level dummies, and against the ordered code as
+    well when the categorical has a natural order, so the 1:1 between
+    education and education-num shows up as 1.00 instead of hiding in a level.
+    """
+    dummies = pd.get_dummies(df[cat], prefix=cat, dtype=float)
+    best = max(abs(dummies[c].corr(df[num])) for c in dummies.columns)
+    if cat in ORDINAL_ORDER:
+        codes = df[cat].map({lvl: i for i, lvl in enumerate(ORDINAL_ORDER[cat])})
+        best = max(best, abs(codes.corr(df[num])))
+    return float(best)
 
 
 assoc = pd.DataFrame(np.eye(len(FEATURES)), index=FEATURES, columns=FEATURES)
@@ -69,7 +88,7 @@ for i, a in enumerate(FEATURES):
             v = cramers_v(df[a], df[b])
         else:
             num, cat = (a, b) if a in NUMERIC_COLUMNS else (b, a)
-            v = correlation_ratio(df[cat], df[num])
+            v = max_level_r(num, cat)
         assoc.loc[a, b] = assoc.loc[b, a] = v
 
 assoc.to_csv(OUT_DIR / "q1_5_association.csv")
