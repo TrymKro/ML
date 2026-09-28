@@ -69,7 +69,7 @@ class RareGroup(BaseEstimator, TransformerMixin):
         return out
 
 
-class Winsorizer(BaseEstimator, TransformerMixin):
+class Capper(BaseEstimator, TransformerMixin):
     """Clip numeric values to the 1st/99th percentiles learned in fit."""
 
     def fit(self, X, y=None):
@@ -114,10 +114,10 @@ def tree_pipeline(**tree_kwargs):
 
 
 def svm_pipeline(svm_kwargs):
-    """Pipeline for SVMs: winsorize + standardize the numerics."""
+    """Pipeline for SVMs: cap + standardize the numerics."""
     pre = ColumnTransformer(
         [
-            ("num", Pipeline([("winsorize", Winsorizer()), ("scale", StandardScaler())]), NUMERIC_COLUMNS),
+            ("num", Pipeline([("cap", Capper()), ("scale", StandardScaler())]), NUMERIC_COLUMNS),
             ("cat", categorical_step(), CAT_ENCODE),
         ]
     )

@@ -26,7 +26,7 @@ from sklearn.tree import DecisionTreeClassifier
 import pandas as pd
 
 from src.data import NUMERIC_COLUMNS
-from src.preprocessing import CAT_ENCODE, categorical_step, Winsorizer
+from src.preprocessing import CAT_ENCODE, categorical_step, Capper
 from src.split import make_split
 from exercise5.plot_utils import decision_surface
 
@@ -39,7 +39,7 @@ X_train, X_val, _, y_train, y_val, _, _, X_svm, y_svm, _ = make_split()
 # PCA is not dominated by the scale of one column.
 pre = ColumnTransformer(
     [
-        ("num", Pipeline([("winsorize", Winsorizer()), ("scale", StandardScaler())]), NUMERIC_COLUMNS),
+        ("num", Pipeline([("cap", Capper()), ("scale", StandardScaler())]), NUMERIC_COLUMNS),
         ("cat", categorical_step(), CAT_ENCODE),
     ]
 )
