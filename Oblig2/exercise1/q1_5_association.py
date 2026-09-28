@@ -20,23 +20,22 @@ import numpy as np
 import pandas as pd
 from scipy.stats import chi2_contingency
 
-from src.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS
+from src.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS, load_all
 from src.preprocessing import MIN_COUNT
-from src.split import make_split
 
 OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 
-X_train, _, _, _, _, _, _, _, _, _ = make_split()
+df = load_all()
 
 # Same cleaning as the modelling pipeline: 'Unknown' missing markers (Q1.1)
 # and the rare-category grouping (Q1.3).
 for col in ["workclass", "occupation", "native-country"]:
-    X_train[col] = X_train[col].fillna("Unknown")
+    df[col] = df[col].fillna("Unknown")
 for col in CATEGORICAL_COLUMNS:
-    counts = X_train[col].value_counts()
+    counts = df[col].value_counts()
     keep = counts[counts >= MIN_COUNT].index
-    X_train[col] = X_train[col].where(X_train[col].isin(keep), "other")
+    df[col] = df[col].where(df[col].isin(keep), "other")
 
 FEATURES = NUMERIC_COLUMNS + CATEGORICAL_COLUMNS
 
@@ -65,12 +64,12 @@ for i, a in enumerate(FEATURES):
         if i <= j:
             continue
         if a in NUMERIC_COLUMNS and b in NUMERIC_COLUMNS:
-            v = abs(X_train[a].corr(X_train[b]))
+            v = abs(df[a].corr(df[b]))
         elif a in CATEGORICAL_COLUMNS and b in CATEGORICAL_COLUMNS:
-            v = cramers_v(X_train[a], X_train[b])
+            v = cramers_v(df[a], df[b])
         else:
             num, cat = (a, b) if a in NUMERIC_COLUMNS else (b, a)
-            v = correlation_ratio(X_train[cat], X_train[num])
+            v = correlation_ratio(df[cat], df[num])
         assoc.loc[a, b] = assoc.loc[b, a] = v
 
 assoc.to_csv(OUT_DIR / "q1_5_association.csv")

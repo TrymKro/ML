@@ -17,13 +17,13 @@ matplotlib.use("Agg")  # works without a display
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from src.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS, TARGET, load_raw
+from src.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS, TARGET, load_all
 
 OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 
-train, test = load_raw()
-print(f"train shape: {train.shape}, test shape: {test.shape}")
+df = load_all()
+print(f"merged shape: {df.shape}")
 
 
 # --------------------------------------------------------------------------
@@ -44,11 +44,10 @@ def missing_summary(df, name):
     return summary
 
 
-train_missing = missing_summary(train, "train")
-missing_summary(test, "test")
+merged_missing = missing_summary(df, "merged")
 
 # Only workclass, occupation and native-country have missing values ('?').
-assert set(train_missing[train_missing.n_missing > 0]["feature"]) == {
+assert set(merged_missing[merged_missing.n_missing > 0]["feature"]) == {
     "workclass",
     "occupation",
     "native-country",
@@ -58,11 +57,11 @@ assert set(train_missing[train_missing.n_missing > 0]["feature"]) == {
 # --------------------------------------------------------------------------
 # is missingness random, or tied to specific subgroups?
 # --------------------------------------------------------------------------
-print("\n=== missingness pattern (train) ===")
+print("\n=== missingness pattern (merged) ===")
 
 # Do missing values overlap between features (rows with several missing)?
 pattern_cols = ["workclass", "occupation", "native-country"]
-miss = train[pattern_cols].isna().astype(int)
+miss = df[pattern_cols].isna().astype(int)
 cooccur = miss.T.dot(miss)
 print("\nco-occurrence of missing values (rows where both are missing):")
 print(cooccur.to_string())
@@ -70,8 +69,8 @@ print(cooccur.to_string())
 # The obvious pairing to check: does a missing occupation go together
 # with a missing workclass?
 ct = pd.crosstab(
-    train["occupation"].isna(),
-    train["workclass"].isna(),
+    df["occupation"].isna(),
+    df["workclass"].isna(),
 ).rename(index={False: "occupation present", True: "occupation missing"},
          columns={False: "workclass present", True: "workclass missing"})
 print("\ncrosstab: occupation x workclass missingness")
@@ -80,12 +79,12 @@ print(ct.to_string())
 # MCAR sanity check: compare the numeric features of rows with a missing
 # occupation vs. rows without. Strong differences suggest the data is NOT
 # missing completely at random (MCAR) but more likely missing at random.
-odd_rows = train["occupation"].isna()
+odd_rows = df["occupation"].isna()
 print("\nmedian numeric features: missing-occupation rows vs. complete rows")
 compared = pd.DataFrame(
     {
-        "missing_occupation": train.loc[odd_rows, NUMERIC_COLUMNS].median(),
-        "complete": train.loc[~odd_rows, NUMERIC_COLUMNS].median(),
+        "missing_occupation": df.loc[odd_rows, NUMERIC_COLUMNS].median(),
+        "complete": df.loc[~odd_rows, NUMERIC_COLUMNS].median(),
     }
 ).round(1)
 print(compared.to_string())
@@ -94,17 +93,17 @@ print(compared.to_string())
 # missingness correlates with the target, which matters downstream.
 print("\nmissing workclass/occupation by income class:")
 for col in ["workclass", "occupation"]:
-    tab = pd.crosstab(train[TARGET], train[col].isna(), normalize="index")
+    tab = pd.crosstab(df[TARGET], df[col].isna(), normalize="index")
     print(f"- {col}\n  {tab.round(4).to_string()}")
 
 # Save the numbers for the report and make the two figures.
-train_missing.to_csv(OUT_DIR / "q1_1_missing_counts.csv", index=False)
+merged_missing.to_csv(OUT_DIR / "q1_1_missing_counts.csv", index=False)
 
 fig, axes = plt.subplots(1, 2, figsize=(11, 4))
 
 # Bar chart of the missing counts.
-axes[0].barh(train_missing["feature"], train_missing["n_missing"], color="#4c72b0")
-axes[0].set_title("Missing values per feature (train)")
+axes[0].barh(merged_missing["feature"], merged_missing["n_missing"], color="#4c72b0")
+axes[0].set_title("Missing values per feature (merged)")
 axes[0].set_xlabel("n rows missing")
 
 # Visualised co-occurrence matrix.

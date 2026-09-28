@@ -19,28 +19,28 @@ import pandas as pd
 from scipy.stats import chi2_contingency, pearsonr
 from sklearn.feature_selection import f_classif
 
-from src.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS
+from src.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS, TARGET, load_all
 from src.preprocessing import MIN_COUNT
-from src.split import make_split
 
 OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 
-X_train, _, _, y_train, _, _, _, _, _, _ = make_split()
+df = load_all()
+y = (df[TARGET] == ">50K").astype(int)
 
 # Same cleaning as the modelling pipeline: 'Unknown' missing markers (Q1.1)
 # and the rare-category grouping (Q1.3).
 for col in ["workclass", "occupation", "native-country"]:
-    X_train[col] = X_train[col].fillna("Unknown")
+    df[col] = df[col].fillna("Unknown")
 for col in CATEGORICAL_COLUMNS:
-    counts = X_train[col].value_counts()
+    counts = df[col].value_counts()
     keep = counts[counts >= MIN_COUNT].index
-    X_train[col] = X_train[col].where(X_train[col].isin(keep), "other")
+    df[col] = df[col].where(df[col].isin(keep), "other")
 
 rows = []
 for col in NUMERIC_COLUMNS:
-    f_stat, p_val = f_classif(X_train[[col]].to_numpy(), y_train)
-    r, _ = pearsonr(X_train[col], y_train)
+    f_stat, p_val = f_classif(df[[col]].to_numpy(), y)
+    r, _ = pearsonr(df[col], y)
     rows.append(
         {
             "feature": col,
@@ -51,7 +51,7 @@ for col in NUMERIC_COLUMNS:
         }
     )
 for col in CATEGORICAL_COLUMNS:
-    tab = pd.crosstab(X_train[col], y_train)
+    tab = pd.crosstab(df[col], y)
     chi2, p_val, *_ = chi2_contingency(tab)
     effect = float(np.sqrt(chi2 / tab.to_numpy().sum()))
     rows.append(

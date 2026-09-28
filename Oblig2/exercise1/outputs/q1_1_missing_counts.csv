@@ -1,7 +1,7 @@
 feature,n_missing,pct
-occupation,1843,5.66
-workclass,1836,5.64
-native-country,583,1.79
+occupation,2809,5.75
+workclass,2799,5.73
+native-country,857,1.75
 fnlwgt,0,0.0
 education,0,0.0
 education-num,0,0.0

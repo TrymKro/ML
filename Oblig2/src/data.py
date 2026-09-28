@@ -79,3 +79,14 @@ def load_raw(train_file="adult.data", test_file="adult.test"):
     # The test target values carry a trailing '.', e.g. '<=50K.', so strip it.
     test[TARGET] = test[TARGET].str.rstrip(".")
     return train, test
+
+
+def load_all():
+    """Return the two UCI files concatenated into one 48842-row DataFrame.
+
+    This is the dataset the assignment describes, and the same frame the
+    60/20/20 split in src/split.py is built from, so the Exercise 1
+    exploration and the modelling runs describe the same data.
+    """
+    train, test = load_raw()
+    return pd.concat([train, test], ignore_index=True)

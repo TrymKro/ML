@@ -53,23 +53,41 @@ print("z-score of the same row   (train scaler):        ",
       sc_train.transform(row).round(3))
 
 # ---------------------------------------------------------------------------
-# Leak demo 2: the rare-category threshold applied to the wrong population.
-# The threshold is 0.5% of the population it is fit on.
+# Leak demo 2: the rare-category keep-set learned on the wrong population.
+# The threshold itself is a fixed constant (162 rows) and cannot leak; what
+# leaks is *which categories clear it*.
 # ---------------------------------------------------------------------------
 leak2 = []
-for label, data, n in [
-    ("train only", X_train, len(X_train)),
-    ("full data", full, len(full)),
-]:
-    min_count = max(1, int(0.005 * n))
+for label, data in [("train only", X_train), ("full data", full)]:
     kept = {}
     for col in CATEGORICAL_COLUMNS:
         counts = data[col].fillna("Unknown").value_counts()
-        kept[col] = int((counts >= min_count).sum())
-    leak2.append({"fit_on": label, "min_count": min_count, **kept})
+        keep = set(counts[counts >= MIN_COUNT].index)
+        kept[col] = keep
+    leak2.append({"fit_on": label, **{c: len(k) for c, k in kept.items()}})
 leak2 = pd.DataFrame(leak2).set_index("fit_on")
-print("\ncategories kept when the 0.5% threshold is fit on:")
+print("\ncategories kept at the fixed MIN_COUNT =", MIN_COUNT)
 print(leak2.to_string())
+
+# Which categories would leak in, and how do their counts change?
+train_counts = {c: X_train[c].fillna("Unknown").value_counts() for c in CATEGORICAL_COLUMNS}
+full_counts = {c: full[c].fillna("Unknown").value_counts() for c in CATEGORICAL_COLUMNS}
+leaked = []
+for c in CATEGORICAL_COLUMNS:
+    a = set(train_counts[c][train_counts[c] >= MIN_COUNT].index)
+    b = set(full_counts[c][full_counts[c] >= MIN_COUNT].index)
+    for cat in sorted(b - a):
+        leaked.append(
+            {
+                "feature": c,
+                "category": cat,
+                "count_train": int(train_counts[c].get(cat, 0)),
+                "count_full": int(full_counts[c][cat]),
+            }
+        )
+leaked = pd.DataFrame(leaked)
+print("\ndummy columns that would exist only because val/test rows were counted:")
+print(leaked.to_string(index=False))
 
 # ---------------------------------------------------------------------------
 # The actual pipeline: fit on the training fold, transform the rest.
@@ -85,4 +103,5 @@ print(f"\ntree pipeline:  {len(NUMERIC_COLUMNS)} numeric + {Xt.shape[1] - len(NU
 print(f"svm pipeline:   {Xs.shape[1]} cols on test (dummies + scaled numerics)")
 
 leak2.to_csv(OUT_DIR / "q1_8_leak.csv")
+leaked.to_csv(OUT_DIR / "q1_8_leak_categories.csv", index=False)
 print(f"\nsaved outputs -> {OUT_DIR}")

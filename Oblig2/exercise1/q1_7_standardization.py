@@ -19,15 +19,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from src.data import NUMERIC_COLUMNS
-from src.split import make_split
+from src.data import NUMERIC_COLUMNS, load_all
 
 OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 
-X_train, _, _, _, _, _, _, _, _, _ = make_split()
+df = load_all()
 
-raw = X_train[NUMERIC_COLUMNS]
+raw = df[NUMERIC_COLUMNS]
 std = (raw - raw.mean()) / raw.std()
 
 stats = pd.DataFrame(

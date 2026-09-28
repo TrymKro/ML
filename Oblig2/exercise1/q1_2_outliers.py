@@ -18,12 +18,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from src.data import NUMERIC_COLUMNS, load_raw
+from src.data import NUMERIC_COLUMNS, load_all
 
 OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 
-train, _ = load_raw()
+df = load_all()
 
 
 def iqr_bounds(x, k=1.5):
@@ -36,7 +36,7 @@ def iqr_bounds(x, k=1.5):
 zs = {}
 rows = []
 for col in NUMERIC_COLUMNS:
-    x = train[col]
+    x = df[col]
     lo, hi = iqr_bounds(x)
     z = (x - x.mean()) / x.std()
     zs[col] = z
@@ -61,7 +61,7 @@ print(res.to_string())
 # 1st/99th percentiles as a reference in case we decide to cap the tails
 # later (only really matters for the SVM, trees don't care about the scale).
 percentiles = pd.DataFrame(
-    {col: [train[col].quantile(0.01), train[col].quantile(0.99)] for col in NUMERIC_COLUMNS},
+    {col: [df[col].quantile(0.01), df[col].quantile(0.99)] for col in NUMERIC_COLUMNS},
     index=["p01", "p99"],
 ).T
 print("\n1st / 99th percentiles:")
@@ -71,7 +71,7 @@ fig, axes = plt.subplots(2, len(NUMERIC_COLUMNS), figsize=(14, 8))
 
 # Top row: boxplots, the whiskers/fliers follow the 1.5*IQR rule.
 for ax, col in zip(axes[0], NUMERIC_COLUMNS):
-    ax.boxplot(train[col])
+    ax.boxplot(df[col])
     ax.set_title(col)
 
 # Bottom row: z-score distribution with the +/-3 threshold marked.

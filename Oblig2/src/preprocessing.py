@@ -29,8 +29,10 @@ from src.data import CATEGORICAL_COLUMNS, NUMERIC_COLUMNS
 # education-num.
 CAT_ENCODE = [c for c in CATEGORICAL_COLUMNS if c != "education"]
 
-# From Q1.3: keep categories seen in at least 162 training rows (0.5% of
-# the original 32,561-row training file), everything rarer becomes 'other'.
+# From Q1.3: keep categories seen in at least 162 rows, everything rarer
+# becomes 'other'. An absolute row count, not a percentage, because the
+# encoder is refitted on training folds smaller than the training set.
+# 162 is 0.55% of the 29304-row training split and 0.33% of the merged file.
 MIN_COUNT = 162
 
 
