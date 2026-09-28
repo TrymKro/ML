@@ -3,7 +3,7 @@
 Shows, with a concrete example, what happens if a preprocessing step is fit
 on the whole dataset before the split instead of on the training fold, then
 applies the actual pipeline (impute -> rare group -> one-hot, plus
-cap + standardize for the numeric branch) to hold-out data.
+standardize for the numeric branch) to hold-out data.
 """
 
 import sys
