@@ -3,7 +3,7 @@
 Plots the shape of each numeric feature before and after z-score
 standardization (zero mean, unit variance) and saves the mean/std of both
 versions. The tree pipeline leaves the numerics untouched; the SVM pipeline
-standardizes them after winsorizing (Q1.2).
+standardizes the raw values (Q1.2 keeps them).
 """
 
 import sys
