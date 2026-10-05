@@ -1,0 +1,18 @@
+# Python build artifacts
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editors
+.vscode/
+.idea/
+
+# OS noise
+.DS_Store
+
+# Helper docs (not part of the deliverable)
+requirements.md
