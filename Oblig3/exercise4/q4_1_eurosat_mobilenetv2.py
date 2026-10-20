@@ -8,12 +8,15 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 from tensorflow import keras
+import tensorflow_datasets as tfds
 
 OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 tf.keras.utils.set_random_seed(42)
 
-# Load EuroSAT with tfds.load('eurosat/rgb', split=['train[:2000]', 'train[2000:2500]'], as_supervised=True, shuffle_files=False).
+# Load EuroSAT with tfds.load('eurosat/rgb', split=['train[:2000]', 'train[2000:2500]'], as_supervised=True, shuffle_files=False). The first
+# split is the training set (2000 samples) and the second split is the test set (500 samples)
+_ = tfds.load
 base = '/home/tk/Desktop/ML/code/Oblig3/data/eurosat/EuroSAT'
 classes = [d for d in sorted(os.listdir(base)) if os.path.isdir(os.path.join(base,d))]
 cls_map = {c:i for i,c in enumerate(classes)}
