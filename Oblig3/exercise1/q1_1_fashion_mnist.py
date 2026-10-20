@@ -74,8 +74,13 @@ ax.legend()
 fig.tight_layout()
 fig.savefig(OUT_DIR / "q1_1_loss.png", dpi=150)
 
+best_idx = min(range(len(history.history["val_loss"])), key=lambda i: history.history["val_loss"][i])
+best_epoch = best_idx + 1
+best_val_loss = history.history["val_loss"][best_idx]
 print(model.count_params(), "parameters")
-print("epochs run:", len(history.history["loss"]))
+print(f"epochs run (of 50 max): {len(history.history['loss'])}")
+print(f"best epoch: {best_epoch}")
+print(f"best validation loss: {best_val_loss:.4f}")
 print(f"test loss: {test_loss:.4f}")
 print(f"test accuracy: {test_acc * 100:.2f}%")
 print(f"saved outputs -> {OUT_DIR}")
