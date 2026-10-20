@@ -1,14 +1,15 @@
+"""Ex4 Q4.1 - Transfer learning on EuroSAT with MobileNetV2 (manual load)."""
 from pathlib import Path
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import os
 import tensorflow as tf
 from tensorflow import keras
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 
-OUT_DIR = Path('/home/tk/Desktop/ML/code/Oblig3/exercise4/outputs')
+OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 tf.keras.utils.set_random_seed(42)
 
@@ -25,8 +26,6 @@ for c in classes:
 X = np.array(X,dtype=np.float32)/255.0
 y = np.array(y)
 
-# assignment: train[:2000], train[2000:2500] - but it's all train split in tfds
-# tfds eurosat/rgb is a single 'train' split of 27000; our manual is in class order, so just slice
 x_train_np, y_train_np = X[:2000], y[:2000]
 x_test_np, y_test_np = X[2000:2500], y[2000:2500]
 
@@ -43,5 +42,15 @@ model = keras.Sequential([
 model.compile(optimizer=keras.optimizers.Adam(0.001), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 history = model.fit(x_train_np,y_train_np,epochs=5,batch_size=32,validation_split=0.1)
 test_loss,test_acc = model.evaluate(x_test_np,y_test_np,verbose=0)
-plt.figure(figsize=(6,4)); plt.plot(history.history['loss'],label='train'); plt.plot(history.history['val_loss'],label='val'); plt.xlabel('epoch'); plt.ylabel('loss'); plt.legend(); plt.tight_layout(); plt.savefig(OUT_DIR/'q4_1_loss.png',dpi=150)
-print(model.count_params()); print(len(history.history['loss'])); print(f'{test_acc*100:.2f}%')
+fig, ax = plt.subplots(figsize=(6,4))
+ax.plot(history.history['loss'],label='training loss')
+ax.plot(history.history['val_loss'],label='validation loss')
+ax.set_xlabel('epoch'); ax.set_ylabel('loss')
+ax.set_title('EuroSAT MobileNetV2: training and validation loss')
+ax.legend(); fig.tight_layout()
+fig.savefig(OUT_DIR/'q4_1_loss.png',dpi=150)
+print(model.count_params(), "parameters")
+print("trainable params:", sum([tf.keras.backend.count_params(w) for w in model.trainable_weights]))
+print("epochs run:", len(history.history['loss']))
+print(f"test loss: {test_loss:.4f}")
+print(f"test accuracy: {test_acc * 100:.2f}%")
