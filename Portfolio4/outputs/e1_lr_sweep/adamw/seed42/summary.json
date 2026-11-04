@@ -1,0 +1,26 @@
+{
+  "config": {
+    "optimizer": "adamw",
+    "seed": 42,
+    "epochs": 20,
+    "batch_size": 32,
+    "lr": 0.0003,
+    "weight_decay": 0.01,
+    "eps": 1e-08,
+    "device": "cpu",
+    "out_dir": "outputs/e1_lr_sweep"
+  },
+  "final_test_acc": 0.8932,
+  "best_test_acc": 0.8956,
+  "final_train_loss": 0.12034587871134281,
+  "mean_active_fraction": 0.5782007896678044,
+  "steps_to_target": {
+    "0.4": 1537,
+    "0.35": 3017,
+    "0.3": 5197,
+    "0.25": 10093,
+    "0.2": 17161
+  },
+  "total_time_s": 168.7,
+  "device": "cpu"
+}

@@ -1,0 +1,26 @@
+{
+  "config": {
+    "optimizer": "c-adamw",
+    "seed": 42,
+    "epochs": 20,
+    "batch_size": 32,
+    "lr": 0.0003,
+    "weight_decay": 0.01,
+    "eps": 1e-08,
+    "device": "cpu",
+    "out_dir": "outputs/e1_lr_sweep"
+  },
+  "final_test_acc": 0.8867,
+  "best_test_acc": 0.8945,
+  "final_train_loss": 0.15527611543511352,
+  "mean_active_fraction": 0.5763142767838166,
+  "steps_to_target": {
+    "0.4": 1443,
+    "0.35": 2577,
+    "0.3": 4863,
+    "0.25": 9813,
+    "0.2": 17270
+  },
+  "total_time_s": 191.5,
+  "device": "cpu"
+}

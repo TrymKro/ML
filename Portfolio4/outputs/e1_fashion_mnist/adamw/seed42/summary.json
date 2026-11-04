@@ -1,0 +1,26 @@
+{
+  "config": {
+    "optimizer": "adamw",
+    "seed": 42,
+    "epochs": 20,
+    "batch_size": 32,
+    "lr": 0.001,
+    "weight_decay": 0.01,
+    "eps": 1e-08,
+    "device": "cpu",
+    "out_dir": "outputs/e1_fashion_mnist"
+  },
+  "final_test_acc": 0.8899,
+  "best_test_acc": 0.8908,
+  "final_train_loss": 0.14854250527260204,
+  "mean_active_fraction": 0.346356948851631,
+  "steps_to_target": {
+    "0.4": 1512,
+    "0.35": 3005,
+    "0.3": 5186,
+    "0.25": 10095,
+    "0.2": 17431
+  },
+  "total_time_s": 167.9,
+  "device": "cpu"
+}
