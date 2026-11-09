@@ -1,8 +1,8 @@
 """Ex4 Q4.1 - Transfer learning on EuroSAT with MobileNetV2 (manual load).
 
-Loads EuroSAT from local class folders (/home/tk/Downloads/eurosat_unzip/EuroSAT),
-resizes images to 64x64, normalizes to [0,1]. Uses first 2000 train / next 500
-test samples (matching tfds splits). Freezes MobileNetV2 (ImageNet) backbone
+Loads EuroSAT from data/EuroSAT/train.csv, resizes images to 64x64 and
+normalizes to [0,1]. Uses the first 2000 train rows for training and the next
+500 for testing (matching tfds splits). Freezes MobileNetV2 (ImageNet) backbone
 and trains a small head with Adam (lr=0.001) for 5 epochs.
 """
 from pathlib import Path
@@ -11,7 +11,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
-import os
+import csv
 import tensorflow as tf
 from tensorflow import keras
 
@@ -19,23 +19,24 @@ OUT_DIR = Path(__file__).resolve().parent / "outputs"
 OUT_DIR.mkdir(exist_ok=True)
 tf.keras.utils.set_random_seed(42)
 
-# Load EuroSAT
-base = '/home/tk/Downloads/eurosat_unzip/EuroSAT'
-classes = [d for d in sorted(os.listdir(base)) if os.path.isdir(os.path.join(base,d))]
-cls_map = {c:i for i,c in enumerate(classes)}
+# Load the train split from train.csv
+base = Path(__file__).resolve().parent / "data" / "EuroSAT"
+print(f"Loading EuroSAT from {base / 'train.csv'}")
 X,y=[],[]
-for c in classes:
-    p = os.path.join(base,c)
-    for f in sorted(os.listdir(p)):
-        if f.endswith('.jpg'):
-            img = Image.open(os.path.join(p,f)).convert('RGB').resize((64,64))
-            X.append(np.array(img)); y.append(cls_map[c])
+with open(base / "train.csv", newline="") as f:
+    for i, row in enumerate(csv.DictReader(f)):
+        if i == 2500:
+            break
+        img = Image.open(base / row["Filename"]).convert("RGB").resize((64,64))
+        X.append(np.array(img))
+        y.append(int(row["Label"]))
 X = np.array(X,dtype=np.float32)/255.0
 y = np.array(y)
 
-# Split as specified
+# Split as specified: train[:2000] and train[2000:2500]
 x_train_np, y_train_np = X[:2000], y[:2000]
 x_test_np, y_test_np = X[2000:2500], y[2000:2500]
+print(f"Train samples: {len(y_train_np)}, test samples: {len(y_test_np)}")
 
 # Model
 base_m = keras.applications.MobileNetV2(include_top=False, weights='imagenet', input_shape=(64,64,3))
